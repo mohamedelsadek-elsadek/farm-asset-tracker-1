@@ -14,7 +14,7 @@ import {
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -364,7 +364,7 @@ export default function CycleForm() {
           <Card>
             <CardHeader>
               <CardTitle>الاستهلاك والتكاليف</CardTitle>
-              <FormDescription>يمكن استكمال هذه البيانات لاحقاً أو في نهاية الدورة</FormDescription>
+              <p className="text-sm text-muted-foreground">يمكن استكمال هذه البيانات لاحقاً أو في نهاية الدورة</p>
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
