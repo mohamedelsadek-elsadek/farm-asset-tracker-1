@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "المصرية للإنتاج الحيواني"
+version = "1.0.0"
+id = "artifacts/poultry-app"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22346
+
+[services.development]
+run = "pnpm --filter @workspace/poultry-app run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/poultry-app", "run", "build" ]
+publicDir = "artifacts/poultry-app/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22346"
+BASE_PATH = "/"

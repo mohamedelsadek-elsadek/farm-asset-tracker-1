@@ -1,22 +1,28 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Poultry Farm Management API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: farms
+    description: Farm operations
+  - name: houses
+    description: House/barn operations
+  - name: cycles
+    description: Production cycle operations
+  - name: dashboard
+    description: Dashboard and analytics
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +30,227 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /farms:
+    get:
+      operationId: listFarms
+      tags: [farms]
+      summary: List all farms
+      responses:
+        "200":
+          description: List of farms
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Farm"
+
+  /farms/{farmId}:
+    get:
+      operationId: getFarm
+      tags: [farms]
+      summary: Get a farm by ID
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Farm details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Farm"
+        "404":
+          description: Not found
+
+  /farms/{farmId}/houses:
+    get:
+      operationId: listHouses
+      tags: [houses]
+      summary: List houses for a farm
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of houses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/House"
+
+  /houses/{houseId}/cycles:
+    get:
+      operationId: listCycles
+      tags: [cycles]
+      summary: List cycles for a house
+      parameters:
+        - name: houseId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of cycles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Cycle"
+    post:
+      operationId: createCycle
+      tags: [cycles]
+      summary: Create a new production cycle
+      parameters:
+        - name: houseId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCycleBody"
+      responses:
+        "201":
+          description: Cycle created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cycle"
+
+  /cycles/{cycleId}:
+    get:
+      operationId: getCycle
+      tags: [cycles]
+      summary: Get a cycle by ID
+      parameters:
+        - name: cycleId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Cycle details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cycle"
+        "404":
+          description: Not found
+    put:
+      operationId: updateCycle
+      tags: [cycles]
+      summary: Update a production cycle
+      parameters:
+        - name: cycleId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCycleBody"
+      responses:
+        "200":
+          description: Cycle updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cycle"
+    delete:
+      operationId: deleteCycle
+      tags: [cycles]
+      summary: Delete a production cycle
+      parameters:
+        - name: cycleId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /dashboard/summary:
+    get:
+      operationId: getCompanySummary
+      tags: [dashboard]
+      summary: Get company-wide summary stats
+      responses:
+        "200":
+          description: Company summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompanySummary"
+
+  /dashboard/farms-performance:
+    get:
+      operationId: getFarmsPerformance
+      tags: [dashboard]
+      summary: Get performance metrics for all farms ranked
+      responses:
+        "200":
+          description: Farms performance list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FarmPerformance"
+
+  /farms/{farmId}/dashboard:
+    get:
+      operationId: getFarmDashboard
+      tags: [dashboard]
+      summary: Get dashboard data for a specific farm
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Farm dashboard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmDashboard"
+
+  /dashboard/best-cycles:
+    get:
+      operationId: getBestCycles
+      tags: [dashboard]
+      summary: Get top performing cycles across all farms
+      responses:
+        "200":
+          description: Best cycles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CycleWithContext"
+
 components:
   schemas:
     HealthStatus:
@@ -31,6 +258,247 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    Farm:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        nameAr:
+          type: string
+        houseCount:
+          type: integer
+        activeCycles:
+          type: integer
+        totalChicks:
+          type: integer
+      required: [id, name, nameAr, houseCount]
+
+    House:
+      type: object
+      properties:
+        id:
+          type: integer
+        farmId:
+          type: integer
+        name:
+          type: string
+        nameAr:
+          type: string
+        areaM2:
+          type: number
+        cycleCount:
+          type: integer
+      required: [id, farmId, name, nameAr, areaM2]
+
+    Cycle:
+      type: object
+      properties:
+        id:
+          type: integer
+        houseId:
+          type: integer
+        cycleNumber:
+          type: integer
+        housingDate:
+          type: string
+          format: date
+        chickCount:
+          type: integer
+        chickPricePerUnit:
+          type: number
+        breed:
+          type: string
+          enum: [Ross, Cobb, Other]
+        totalFeedKg:
+          type: number
+        feedCostTotal:
+          type: number
+        totalMedicationCost:
+          type: number
+        totalMortality:
+          type: number
+        finalWeightKg:
+          type: number
+        saleAgedays:
+          type: integer
+        salePricePerKg:
+          type: number
+        otherCosts:
+          type: number
+        status:
+          type: string
+          enum: [active, completed]
+        mortalityRate:
+          type: number
+        fcr:
+          type: number
+        averageWeightKg:
+          type: number
+        totalCost:
+          type: number
+        totalRevenue:
+          type: number
+        netProfit:
+          type: number
+        costPerLiveKg:
+          type: number
+        profitPerChick:
+          type: number
+      required: [id, houseId, cycleNumber, housingDate, chickCount, chickPricePerUnit, breed, status]
+
+    CreateCycleBody:
+      type: object
+      properties:
+        cycleNumber:
+          type: integer
+        housingDate:
+          type: string
+          format: date
+        chickCount:
+          type: integer
+        chickPricePerUnit:
+          type: number
+        breed:
+          type: string
+          enum: [Ross, Cobb, Other]
+        totalFeedKg:
+          type: number
+        feedCostTotal:
+          type: number
+        totalMedicationCost:
+          type: number
+        totalMortality:
+          type: number
+        finalWeightKg:
+          type: number
+        saleAgedays:
+          type: integer
+        salePricePerKg:
+          type: number
+        otherCosts:
+          type: number
+        status:
+          type: string
+          enum: [active, completed]
+      required: [cycleNumber, housingDate, chickCount, chickPricePerUnit, breed, status]
+
+    CompanySummary:
+      type: object
+      properties:
+        totalFarms:
+          type: integer
+        totalHouses:
+          type: integer
+        activeCycles:
+          type: integer
+        completedCycles:
+          type: integer
+        totalChicksAllTime:
+          type: integer
+        totalRevenueAllTime:
+          type: number
+        totalProfitAllTime:
+          type: number
+        averageFcr:
+          type: number
+        averageMortalityRate:
+          type: number
+        bestFarmName:
+          type: string
+        worstFarmName:
+          type: string
+      required: [totalFarms, totalHouses, activeCycles, completedCycles, totalChicksAllTime, totalRevenueAllTime, totalProfitAllTime, averageFcr, averageMortalityRate]
+
+    FarmPerformance:
+      type: object
+      properties:
+        farmId:
+          type: integer
+        farmName:
+          type: string
+        farmNameAr:
+          type: string
+        totalCycles:
+          type: integer
+        totalChicks:
+          type: integer
+        totalRevenue:
+          type: number
+        totalProfit:
+          type: number
+        averageFcr:
+          type: number
+        averageMortalityRate:
+          type: number
+        profitMarginPercent:
+          type: number
+        rank:
+          type: integer
+      required: [farmId, farmName, farmNameAr, totalCycles, totalChicks, totalRevenue, totalProfit, averageFcr, averageMortalityRate, profitMarginPercent, rank]
+
+    FarmDashboard:
+      type: object
+      properties:
+        farm:
+          $ref: "#/components/schemas/Farm"
+        houses:
+          type: array
+          items:
+            $ref: "#/components/schemas/House"
+        cycles:
+          type: array
+          items:
+            $ref: "#/components/schemas/Cycle"
+        bestCycle:
+          $ref: "#/components/schemas/Cycle"
+        worstCycle:
+          $ref: "#/components/schemas/Cycle"
+        totalProfit:
+          type: number
+        averageFcr:
+          type: number
+        averageMortalityRate:
+          type: number
+        houseComparison:
+          type: array
+          items:
+            $ref: "#/components/schemas/HouseStats"
+      required: [farm, houses, cycles, totalProfit, averageFcr, averageMortalityRate, houseComparison]
+
+    HouseStats:
+      type: object
+      properties:
+        houseId:
+          type: integer
+        houseName:
+          type: string
+        houseNameAr:
+          type: string
+        cycleCount:
+          type: integer
+        totalProfit:
+          type: number
+        averageFcr:
+          type: number
+        averageMortalityRate:
+          type: number
+      required: [houseId, houseName, houseNameAr, cycleCount, totalProfit, averageFcr, averageMortalityRate]
+
+    CycleWithContext:
+      type: object
+      properties:
+        cycle:
+          $ref: "#/components/schemas/Cycle"
+        farmName:
+          type: string
+        farmNameAr:
+          type: string
+        houseName:
+          type: string
+        houseNameAr:
+          type: string
+      required: [cycle, farmName, farmNameAr, houseName, houseNameAr]
